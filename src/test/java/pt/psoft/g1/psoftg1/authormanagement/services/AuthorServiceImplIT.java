@@ -1,5 +1,7 @@
 package pt.psoft.g1.psoftg1.authormanagement.services;
 
+import org.hibernate.StaleObjectStateException;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,10 +19,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-/**
- * Based on https://www.baeldung.com/spring-boot-testing
- * <p>Adaptations to Junit 5 with ChatGPT
- */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class AuthorServiceImplIT {
@@ -45,5 +43,36 @@ public class AuthorServiceImplIT {
         Optional<Author> found = authorService.findByAuthorNumber(id);
         found.ifPresent(author -> assertThat(author.getId())
                 .isEqualTo(id));
+    }
+
+    @Test
+    public void shouldReturnUpdatedAuthorWhenPartialUpdateHasOnlyName() {
+        // Arrange
+        Author existing = new Author("Alex", "O Alex escreveu livros", null);
+        Mockito.when(authorRepository.findByAuthorNumber(1L)).thenReturn(Optional.of(existing));
+        Mockito.when(authorRepository.save(Mockito.any(Author.class))).thenAnswer(i -> i.getArgument(0));
+        UpdateAuthorRequest request = new UpdateAuthorRequest();
+        request.setName("Alexandre");
+
+        // Act
+        Author updated = authorService.partialUpdate(1L, request, existing.getVersion());
+
+        // Assert
+        assertThat(updated.getName()).isEqualTo("Alexandre");
+        assertThat(updated.getBio()).isEqualTo("O Alex escreveu livros");
+    }
+
+    @Test
+    public void shouldNotSaveAuthorWhenVersionIsStale() {
+        // Arrange
+        Author existing = new Author("Alex", "O Alex escreveu livros", null);
+        Mockito.when(authorRepository.findByAuthorNumber(1L)).thenReturn(Optional.of(existing));
+        UpdateAuthorRequest request = new UpdateAuthorRequest();
+        request.setName("Alexandre");
+
+        // Act + Assert
+        assertThrows(StaleObjectStateException.class,
+                () -> authorService.partialUpdate(1L, request, 999L));
+        Mockito.verify(authorRepository, Mockito.never()).save(Mockito.any(Author.class));
     }
 }

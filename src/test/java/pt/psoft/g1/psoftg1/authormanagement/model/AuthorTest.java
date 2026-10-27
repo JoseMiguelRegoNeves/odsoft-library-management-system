@@ -82,5 +82,20 @@ class AuthorTest {
         assertNotNull(photo);
         assertEquals("photoTest.jpg", photo.getPhotoFile());
     }
-}
 
+    @Test
+    void shouldUpdateNameAndBioWhenVersionMatches() {
+        // Arrange
+        final var subject = new Author(validName, validBio, null);
+        final var patch = new UpdateAuthorRequest();
+        patch.setName("Maria Silva");
+        patch.setBio("A Maria Silva é escritora.");
+
+        // Act
+        subject.applyPatch(subject.getVersion(), patch);
+
+        // Assert
+        assertEquals("Maria Silva", subject.getName());
+        assertEquals("A Maria Silva é escritora.", subject.getBio());
+    }
+}
