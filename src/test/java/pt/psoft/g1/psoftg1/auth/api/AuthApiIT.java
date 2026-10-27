@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class TestAuthApi {
+class AuthApiIT {
 
     private final MockMvc mockMvc;
     private final ObjectMapper objectMapper;
@@ -38,7 +38,7 @@ class TestAuthApi {
     private final String password = "Test12345_";
 
     @Autowired
-    public TestAuthApi(final MockMvc mockMvc, final ObjectMapper objectMapper,
+    public AuthApiIT(final MockMvc mockMvc, final ObjectMapper objectMapper,
                        final UserTestDataFactory userTestDataFactory) {
         this.mockMvc = mockMvc;
         this.objectMapper = objectMapper;

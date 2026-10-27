@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(AuthorController.class)
 @AutoConfigureMockMvc
-public class AuthorControllerIntegrationTest {
+public class AuthorControllerIT {
 
     @BeforeEach
     public void setUp() {

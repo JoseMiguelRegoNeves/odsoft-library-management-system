@@ -23,7 +23,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class AuthorServiceImplIntegrationTest {
+public class AuthorServiceImplIT {
     @Autowired
     private AuthorService authorService;
     @MockBean
