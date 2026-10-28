@@ -11,6 +11,12 @@ import pt.psoft.g1.psoftg1.shared.model.Photo;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Granularidade: unitário.
+ * SUT: {@link Author} (modelo de domínio).
+ * Técnica: partições de equivalência, a partir do comportamento esperado.
+ * Doubles: nenhum.
+ */
 class AuthorTest {
     private final String validName = "João Alberto";
     private final String validBio = "O João Alberto nasceu em Chaves e foi pedreiro a maior parte da sua vida.";
@@ -82,6 +88,10 @@ class AuthorTest {
         assertNotNull(photo);
         assertEquals("photoTest.jpg", photo.getPhotoFile());
     }
+
+    /**
+     * Granularidade: unitário de caixa opaca.
+     */
 
     @Test
     void shouldUpdateNameAndBioWhenVersionMatches() {

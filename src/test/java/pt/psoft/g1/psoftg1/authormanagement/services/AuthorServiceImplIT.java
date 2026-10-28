@@ -19,6 +19,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * Granularidade: Integração.
+ * SUT: {@link AuthorService}
+ */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class AuthorServiceImplIT {
@@ -45,6 +49,10 @@ public class AuthorServiceImplIT {
                 .isEqualTo(id));
     }
 
+    /**
+     * Granularidade: Integração de caixa opaca
+     */
+
     @Test
     public void shouldReturnUpdatedAuthorWhenPartialUpdateHasOnlyName() {
         // Arrange
@@ -61,6 +69,10 @@ public class AuthorServiceImplIT {
         assertThat(updated.getName()).isEqualTo("Alexandre");
         assertThat(updated.getBio()).isEqualTo("O Alex escreveu livros");
     }
+
+    /**
+     * Granularidade: Integração de caixa transparente
+     */
 
     @Test
     public void shouldNotSaveAuthorWhenVersionIsStale() {

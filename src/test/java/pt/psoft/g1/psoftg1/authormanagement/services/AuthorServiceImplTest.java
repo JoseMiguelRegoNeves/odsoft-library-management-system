@@ -13,6 +13,10 @@ import pt.psoft.g1.psoftg1.bookmanagement.repositories.BookRepository;
 import pt.psoft.g1.psoftg1.exceptions.NotFoundException;
 import pt.psoft.g1.psoftg1.shared.repositories.PhotoRepository;
 
+/**
+ * Granularidade: unitário (caixa transparente).
+ * SUT: {@link AuthorServiceImpl}.
+ */
 @ExtendWith(MockitoExtension.class)
 class AuthorServiceImplTest {
     @Mock
@@ -27,6 +31,9 @@ class AuthorServiceImplTest {
     @InjectMocks
     private AuthorServiceImpl authorService;
 
+    /**
+     * Granularidade: unitário de caixa transparente.
+     */
     @Test
     void shouldThrowNotFoundExceptionWhenAuthorDoesNotExist() {
         // Arrange
