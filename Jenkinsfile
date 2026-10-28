@@ -2,38 +2,37 @@ pipeline {
     agent any
     tools {
         jdk 'JDK17'
-        maven 'Maven3'
     }
 
     stages {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                sh 'mvn clean compile'
+                sh 'sh mvnw clean compile'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test'
+                sh 'sh mvnw test'
             }
         }
 
         stage('Integration Test') {
             steps {
-                sh 'mvn test-compile failsafe:integration-test failsafe:verify'
+                sh 'sh mvnw test-compile failsafe:integration-test failsafe:verify'
             }
         }
 
         stage('Mutation Test') {
             steps {
-                sh 'mvn test-compile org.pitest:pitest-maven:mutationCoverage'
+                sh 'sh mvnw test-compile org.pitest:pitest-maven:mutationCoverage'
             }
         }
 
         stage('Package') {
             steps {
-                sh 'mvn package -DskipTests'
+                sh 'sh mvnw package -DskipTests'
             }
         }
     }
