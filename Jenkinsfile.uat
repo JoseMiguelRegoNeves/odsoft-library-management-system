@@ -1,0 +1,39 @@
+// Pipeline 2 de 3: Deploy UAT. Corre depois do sucesso de Deploy Dev.
+// Obtém o artefacto arquivado pelo job de CI e promove-o para Produção.
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'CI_BUILD', defaultValue: '', description: 'Número do build do job de CI a instalar em UAT')
+    }
+
+    stages {
+        stage('Obter artefacto') {
+            steps {
+                script {
+                    if (!(params.CI_BUILD ==~ /[0-9]+/)) {
+                        error('Indicar um CI_BUILD numérico.')
+                    }
+                }
+                copyArtifacts projectName: 'GitHub-ODSOFT-Dev',
+                              selector: specific(params.CI_BUILD),
+                              filter: 'artifact/*',
+                              fingerprintArtifacts: true
+            }
+        }
+
+        stage('Deploy UAT') {
+            steps {
+                script { load('deploy/deploy.groovy').run('uat') }
+            }
+        }
+
+        stage('Trigger Prod') {
+            steps {
+                // Dispara o job de Produção, que aguarda a validação, sem esperar pelo seu fim
+                build job: 'GitHub-ODSOFT-Prod', wait: false,
+                      parameters: [string(name: 'CI_BUILD', value: params.CI_BUILD)]
+            }
+        }
+    }
+}

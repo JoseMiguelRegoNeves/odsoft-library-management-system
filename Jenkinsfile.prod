@@ -1,0 +1,40 @@
+// Pipeline 3 de 3: Deploy Prod. Aguarda validação manual, no máximo 7 dias.
+// Passado o prazo, a execução é abortada sem fazer deploy.
+pipeline {
+    agent none
+
+    parameters {
+        string(name: 'CI_BUILD', defaultValue: '', description: 'Número do build do job de CI a instalar em Produção')
+    }
+
+    stages {
+        stage('Validação') {
+            options {
+                timeout(time: 7, unit: 'DAYS')
+            }
+            input {
+                message 'Validar o deploy para Produção?'
+                ok 'Aprovar'
+            }
+            steps {
+                echo "Validação aprovada para o build ${params.CI_BUILD}."
+            }
+        }
+
+        stage('Deploy Prod') {
+            agent any
+            steps {
+                script {
+                    if (!(params.CI_BUILD ==~ /[0-9]+/)) {
+                        error('Indicar um CI_BUILD numérico.')
+                    }
+                }
+                copyArtifacts projectName: 'GitHub-ODSOFT-Dev',
+                              selector: specific(params.CI_BUILD),
+                              filter: 'artifact/*',
+                              fingerprintArtifacts: true
+                script { load('deploy/deploy.groovy').run('prod') }
+            }
+        }
+    }
+}
