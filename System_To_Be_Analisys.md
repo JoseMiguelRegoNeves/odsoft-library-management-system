@@ -170,7 +170,7 @@ As regras do Google reportam as violações com gravidade de aviso, pelo que nã
 
 ## 2. Criação da pipeline
 
-A pipeline será implementada na plataforma Jenkins e dividida em três pipelines (jobs), definidas em três ficheiros versionados no repositório que partilham o script `deploy/deploy.groovy`. O pacote produzido pelo CI ficará arquivado e versionado no Jenkins, e será esse mesmo pacote a ser instalado em Dev, em UAT e em Produção.
+A pipeline será implementada na plataforma Jenkins e dividida em três pipelines (jobs), definidas em três ficheiros versionados no repositório que partilham o script `deploy/deploy.groovy`. O pacote produzido pelo CI ficará arquivado e versionado no Jenkins, e será esse mesmo pacote a ser instalado em Dev, em UAT e em Produção. A pipeline será executada em dois contextos de execução do Jenkins, um local e um remoto (secção 2.6), que usam os mesmos Jenkinsfiles e fazem deploy nos mesmos ambientes.
 
 ### 2.1 Pipelines
 
@@ -182,7 +182,7 @@ A pipeline será implementada na plataforma Jenkins e dividida em três pipeline
 
 | Elemento | Descrição |
 |---|---|
-| Plataforma | Jenkins, com os jobs do tipo Pipeline script from SCM (Git) |
+| Plataforma | Jenkins, em dois contextos de execução (local e remoto), com os jobs do tipo Pipeline script from SCM (Git) |
 | Trigger | Alteração de código no repositório (OnCommit) |
 | Responsável pela validação | Gestor de Projeto (José Neves) |
 | Comportamento após o prazo de 7 dias | Término automático da pipeline sem fazer deploy em Produção |
@@ -259,6 +259,21 @@ Os três ambientes ficarão na mesma máquina virtual por indicação do docente
 | Credencial no Jenkins | `jenkins-deploy-in-server-ssh` (SSH Username with private key, utilizador `deploy`) |
 | Variáveis globais no Jenkins | `DEMO_SSH_TARGET`, `DEMO_SSH_PORT`, `DEMO_DEV_URL`, `DEMO_UAT_URL` e `DEMO_PROD_URL` |
 | Plugins e ferramentas no Jenkins | SSH Agent, Copy Artifact, GitHub e a ferramenta `JDK17` |
+
+#### Contextos de execução do Jenkins
+
+A pipeline será executada em dois Jenkins, que correspondem aos dois servidores da vista física (secção 3.2).
+
+| Elemento | Jenkins local | Jenkins remoto |
+|---|---|---|
+| Endereço | `https://shanna-intoed-nonnationalistically.ngrok-free.dev/` | `https://vs-gate.dei.isep.ipp.pt:10536/` |
+| Onde corre | Máquina local do desenvolvedor | VM `vs536` (Ubuntu), do DEI |
+| Acesso | Túnel ngrok, que expõe o Jenkins local por HTTPS | Gateway do DEI, que expõe a VM por HTTPS na porta 10536 |
+| Jobs | `GitHub-ODSOFT-Dev`, `GitHub-ODSOFT-UAT` e `GitHub-ODSOFT-Prod`, com os mesmos Jenkinsfiles | Os mesmos três jobs e os mesmos Jenkinsfiles |
+| Configuração | Credencial `jenkins-deploy-in-server-ssh`, variáveis globais `DEMO_*`, plugins SSH Agent, Copy Artifact e GitHub, e a ferramenta `JDK17` | A mesma configuração |
+| Destino do deploy | VM `vs892` (Dev, UAT e Prod), por SSH em `vsgate-ssh.dei.isep.ipp.pt:10892` | A mesma VM `vs892` |
+
+Como os dois Jenkins fazem deploy nos mesmos ambientes da VM `vs892`, as execuções não deverão correr ao mesmo tempo, porque disputariam o mesmo ficheiro `app.jar.new` e o mesmo serviço.
 
 #### Isolamento e riscos
 
@@ -355,6 +370,7 @@ A vista de implementação organiza a solução em quatro grupos. O repositório
 | D09 | Validação do Swagger (HTTP 200) depois de cada deploy | Outros endpoints da aplicação | É um endpoint público e leve que confirma que a aplicação arrancou | Verificação mínima do estado da aplicação |
 | D10 | Testes novos sem base de dados | Testes com a H2 | Testes mais rápidos e isolados, com o repositório substituído por `@MockBean` | Não é testada a persistência |
 | D11 | Um só comando, `mvnw clean verify`, no estágio `Build & Verify` | Um estágio por ferramenta | Percorre o ciclo de vida do Maven numa execução, sem repetir compilações | O Stage View não separa os passos |
+| D12 | Jenkins em dois contextos de execução (local e remoto) | Um único Jenkins | Cumpre o critério de execução da pipeline em dois contextos | Os dois fazem deploy na mesma VM, pelo que as execuções não devem coincidir |
 
 
 ## 5. Rastreabilidade
@@ -373,3 +389,4 @@ A tabela liga cada requisito, ou indicação do docente, à decisão, ao artefac
 | R09 | Pacote armazenado e versionado no Jenkins | 2.3 | `Jenkinsfile` (Archive), `Jenkinsfile.uat` e `Jenkinsfile.prod` (Copy Artifact) | `661ff75` |
 | R10 | Validação do Swagger depois do deploy | 2.4 | `deploy/deploy.groovy` | `f49f60e` |
 | R11 | Aplicação a correr nos ambientes | 2.7 | `application.properties`, `Bootstrapper.java`, `mvnw` e `.mvn` | `5ce5ff4`, `2f0733e`, `1e40b6a`, `c6e560c`, `ab68cd7` |
+| R12 | Pipeline executada em dois contextos do Jenkins (local e remoto) | 2.6 | Configuração do Jenkins local e do Jenkins remoto | Configuração do Jenkins, sem commits |
