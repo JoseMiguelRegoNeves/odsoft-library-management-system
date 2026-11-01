@@ -20,8 +20,10 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
- * Granularidade: Integração.
- * SUT: {@link AuthorService}
+ * Granularidade: integração (caixa opaca e caixa transparente nos testes novos).
+ * SUT: {@link AuthorService}, com o {@code AuthorServiceImpl} e o {@code AuthorMapper} reais no contexto Spring.
+ * Técnica: partições de equivalência (caixa opaca) e verificação da interação com o repositório (caixa transparente).
+ * Doubles: {@code @MockBean AuthorRepository}, pelo que não é usada base de dados.
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -50,9 +52,11 @@ public class AuthorServiceImplIT {
     }
 
     /**
-     * Granularidade: Integração de caixa opaca
+     * Granularidade: integração de caixa opaca.
+     * SUT: {@link AuthorService#partialUpdate}, usado pela interface.
+     * Técnica: partições de equivalência (pedido só com o nome), verificando apenas o autor devolvido.
+     * Doubles: {@code @MockBean AuthorRepository}, com stub de {@code findByAuthorNumber} e de {@code save}.
      */
-
     @Test
     public void shouldReturnUpdatedAuthorWhenPartialUpdateHasOnlyName() {
         // Arrange
@@ -71,9 +75,12 @@ public class AuthorServiceImplIT {
     }
 
     /**
-     * Granularidade: Integração de caixa transparente
+     * Granularidade: integração de caixa transparente.
+     * SUT: {@link AuthorService#partialUpdate}, com o {@code AuthorServiceImpl} e o {@code AuthorMapper} reais.
+     * Técnica: verificação da interação com o repositório, a partir da ordem interna do serviço
+     * (a versão é validada antes do {@code save}).
+     * Doubles: {@code @MockBean AuthorRepository}, com {@code verify(..., never()).save(...)}.
      */
-
     @Test
     public void shouldNotSaveAuthorWhenVersionIsStale() {
         // Arrange

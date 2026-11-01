@@ -12,7 +12,7 @@ import pt.psoft.g1.psoftg1.shared.model.Photo;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Granularidade: unitário.
+ * Granularidade: unitário (caixa opaca nos testes novos).
  * SUT: {@link Author} (modelo de domínio).
  * Técnica: partições de equivalência, a partir do comportamento esperado.
  * Doubles: nenhum.
@@ -91,8 +91,10 @@ class AuthorTest {
 
     /**
      * Granularidade: unitário de caixa opaca.
+     * SUT: {@link Author#applyPatch}.
+     * Técnica: partições de equivalência (pedido com nome e bio preenchidos e versão correta).
+     * Doubles: nenhum.
      */
-
     @Test
     void shouldUpdateNameAndBioWhenVersionMatches() {
         // Arrange

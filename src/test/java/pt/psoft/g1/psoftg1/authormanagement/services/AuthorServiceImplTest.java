@@ -16,6 +16,9 @@ import pt.psoft.g1.psoftg1.shared.repositories.PhotoRepository;
 /**
  * Granularidade: unitário (caixa transparente).
  * SUT: {@link AuthorServiceImpl}.
+ * Técnica: cobertura de ramos, a partir da estrutura do código de {@code partialUpdate}.
+ * Doubles: mocks Mockito de {@code AuthorRepository}, {@code BookRepository}, {@code AuthorMapper}
+ * e {@code PhotoRepository}.
  */
 @ExtendWith(MockitoExtension.class)
 class AuthorServiceImplTest {
@@ -33,6 +36,9 @@ class AuthorServiceImplTest {
 
     /**
      * Granularidade: unitário de caixa transparente.
+     * SUT: {@link AuthorServiceImpl#partialUpdate}.
+     * Técnica: cobertura de ramos (ramo do {@code orElseThrow} quando o autor não existe).
+     * Doubles: mock de {@code AuthorRepository} a devolver {@code Optional.empty()}.
      */
     @Test
     void shouldThrowNotFoundExceptionWhenAuthorDoesNotExist() {
