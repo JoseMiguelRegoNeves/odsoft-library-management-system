@@ -12,34 +12,12 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        // Um só comando percorre o ciclo de vida do Maven: linter (Checkstyle), compilação,
+        // testes unitários, Package, testes de integração, mutação (PIT) e cobertura (JaCoCo)
+        stage('Build & Verify') {
             steps {
                 echo 'Building the project...'
-                sh 'sh mvnw clean compile'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'sh mvnw test'
-            }
-        }
-
-        stage('Integration Test') {
-            steps {
-                sh 'sh mvnw test-compile failsafe:integration-test failsafe:verify'
-            }
-        }
-
-        stage('Mutation Test') {
-            steps {
-                sh 'sh mvnw test-compile org.pitest:pitest-maven:mutationCoverage'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                sh 'sh mvnw package -DskipTests'
+                sh 'sh mvnw clean verify'
             }
         }
 
@@ -77,6 +55,8 @@ pipeline {
             junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml' // Publish Unit Results
             junit allowEmptyResults: true, testResults: 'target/failsafe-reports/*.xml' // Publish Integration Results
             archiveArtifacts artifacts: 'target/pit-reports/**', allowEmptyArchive: true // Publish Mutation Results
+            archiveArtifacts artifacts: 'target/checkstyle-result.xml', allowEmptyArchive: true // Publish Linter Results
+            archiveArtifacts artifacts: 'target/site/jacoco/**', allowEmptyArchive: true // Publish Coverage Results
         }
     }
 }

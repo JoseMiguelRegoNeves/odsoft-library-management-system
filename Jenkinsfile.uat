@@ -1,36 +1,57 @@
 // Pipeline 2 de 3: Deploy UAT. Corre depois do sucesso de Deploy Dev.
-// Obtém o artefacto arquivado pelo job de CI e promove-o para Produção.
+// Obtém o artefacto arquivado pelo job de CI, instala-o em UAT e aguarda a validação
+// manual (no máximo 7 dias) antes de disparar o job de Produção.
+// Passado o prazo sem validação, a execução é abortada e a Produção não é disparada.
 pipeline {
-    agent any
+    agent none
 
     parameters {
         string(name: 'CI_BUILD', defaultValue: '', description: 'Número do build do job de CI a instalar em UAT')
     }
 
     stages {
-        stage('Obter artefacto') {
-            steps {
-                script {
-                    if (!(params.CI_BUILD ==~ /[0-9]+/)) {
-                        error('Indicar um CI_BUILD numérico.')
+        // Agrupa os estágios que partilham o workspace; o executor é libertado antes da validação
+        stage('UAT') {
+            agent any
+            stages {
+                stage('Obter artefacto') {
+                    steps {
+                        script {
+                            if (!(params.CI_BUILD ==~ /[0-9]+/)) {
+                                error('Indicar um CI_BUILD numérico.')
+                            }
+                        }
+                        copyArtifacts projectName: 'GitHub-ODSOFT-Dev',
+                                      selector: specific(params.CI_BUILD),
+                                      filter: 'artifact/*',
+                                      fingerprintArtifacts: true
                     }
                 }
-                copyArtifacts projectName: 'GitHub-ODSOFT-Dev',
-                              selector: specific(params.CI_BUILD),
-                              filter: 'artifact/*',
-                              fingerprintArtifacts: true
+
+                stage('Deploy UAT') {
+                    steps {
+                        script { load('deploy/deploy.groovy').run('uat') }
+                    }
+                }
             }
         }
 
-        stage('Deploy UAT') {
+        stage('Validação') {
+            options {
+                timeout(time: 7, unit: 'DAYS')
+            }
+            input {
+                message 'Validar a UAT e promover para Produção?'
+                ok 'Aprovar'
+            }
             steps {
-                script { load('deploy/deploy.groovy').run('uat') }
+                echo "Validação aprovada para o build ${params.CI_BUILD}."
             }
         }
 
         stage('Trigger Prod') {
             steps {
-                // Dispara o job de Produção, que aguarda a validação, sem esperar pelo seu fim
+                // Dispara o job de Produção, que instala o artefacto validado, sem esperar pelo seu fim
                 build job: 'GitHub-ODSOFT-Prod', wait: false,
                       parameters: [string(name: 'CI_BUILD', value: params.CI_BUILD)]
             }

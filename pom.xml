@@ -152,7 +152,7 @@
 			</plugin>
 
 			<!-- Mutation tests (PIT) over the unit tests of the Author domain.
-				 Not bound to the build lifecycle. Run: mvn test-compile org.pitest:pitest-maven:mutationCoverage -->
+				 Bound to the verify phase, after the integration tests. -->
 			<plugin>
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
@@ -164,6 +164,15 @@
 						<version>1.2.1</version>
 					</dependency>
 				</dependencies>
+				<executions>
+					<execution>
+						<id>mutation-coverage</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>mutationCoverage</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
 					<targetClasses>
 						<param>pt.psoft.g1.psoftg1.authormanagement.model.*</param>
@@ -180,6 +189,53 @@
 					</outputFormats>
 					<timestampedReports>false</timestampedReports>
 				</configuration>
+			</plugin>
+
+			<!-- Linter (Checkstyle, regras Google). Bound to the validate phase.
+				 Violations are reported with severity warning and do not fail the build. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>checkstyle-check</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<configLocation>google_checks.xml</configLocation>
+					<consoleOutput>true</consoleOutput>
+					<failOnViolation>true</failOnViolation>
+					<violationSeverity>error</violationSeverity>
+					<includeTestSourceDirectory>false</includeTestSourceDirectory>
+				</configuration>
+			</plugin>
+
+			<!-- Code coverage (JaCoCo). The agent instruments the unit and integration tests;
+				 the report is generated in target/site/jacoco during the verify phase. -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+				<executions>
+					<execution>
+						<id>jacoco-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 			<plugin>
