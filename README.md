@@ -6,7 +6,7 @@ Aplicação de gestão de bibliotecas (back end em Spring Boot e Java 17), usada
 
 | Número de Aluno | Nome |
 |---|---|
-| 1200901 | José Miguel Neves |
+| 1200901 | José Miguel Neves  |
 
 ## Documentação do trabalho
 
